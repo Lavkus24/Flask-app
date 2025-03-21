@@ -282,34 +282,38 @@ def get_profile_data(username, driver):
        
         asyncio.run(aws.update_instagram_profiles(user_data))
         asyncio.run(aws.store_post_data_in_opensearch(posts_data))
-        driver.quit()
+        
         return  {"user_data" :  user_data }
     else:
         return "Data not found in the meta description."
 
 def create_Driver():
-
-    # driver_path = "C:/Program Files/chromedriver-win64/chromedriver.exe"
-    # chrome_options = Options()
-    # chrome_options.add_argument("--headless")
-    # service = Service(executable_path=driver_path)
-    # driver = webdriver.Chrome(service=service, options=chrome_options)
+    driver_path = "C:/Program Files/chromedriver-win64/chromedriver.exe"
+    service = Service(executable_path=driver_path)
+    driver = webdriver.Chrome(service=service)
     
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
+    # options = Options()
+    # options.add_argument('--headless')
+    # options.add_argument('--no-sandbox')
+    # options.add_argument('--disable-dev-shm-usage')
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
     
     driver.get("https://www.instagram.com/")
 
     cookiesList = [
+        {'name': 'sessionid', 'value': '72526559706%3Am6c9fkbDTmhvvv%3A28%3AAYeETJ5-NGpgJlqW9fzple01ziHGRIB-8ORxlEYH1g'},  
         {'name': 'sessionid', 'value': '72376088787%3AMIceO8FObfB1dE%3A19%3AAYeWs0yCYVjT74HsmClJA4EoD7YRZYvl09LwPRuEZw'},    
         {'name': 'sessionid', 'value': '72376088787%3AMIceO8FObfB1dE%3A19%3AAYcIx3mF_yM8cufzywqw4M8N6RFZXrTjv5SM1MGNaA'}, 
         {'name': 'sessionid', 'value': '56189549536%3ALaUdlCEKvhE7id%3A16%3AAYd9vANxiBdWRfHloWb6lMX0B1rUFLJZIKcRfFdISg'}, 
         {'name': 'sessionid', 'value': '56189549536%3AEh88ytCyRmrzkq%3A10%3AAYfEA1Gy8V1qNWDL7sGvaSHaJZhqL7oS3-rH-X3Nvw'},   
+        
+         
         {'name': 'sessionid', 'value': '72730890572%3ARZYugd08Jv45QD%3A18%3AAYcOPgizoGuIWk9lrcv9YdVOo2oPTCX4dIkSrJYvjg'},   
+         
         {'name': 'sessionid', 'value': '51317686193%3AAHvdnOhUK9JxH1%3A2%3AAYcqyAPD8CryFMIdsVvusUQjw9Mov3TKr2goMmNyHw'},  
+          
         {'name': 'sessionid', 'value': '72376088787%3AMIceO8FObfB1dE%3A19%3AAYcuW-neTjO494aJUDbDZpI8eAn_i29vtNwtoI7M6mI'}, 
     ]
     
@@ -332,8 +336,7 @@ def create_Driver():
 
 def scrap_data(batch) :
     driver = create_Driver()
-
-    # for user in batch:
+    print(f"Batchsc : {batch}")
     profile_data = get_profile_data(batch, driver)
     print(json.dumps(profile_data))
     driver.quit()
