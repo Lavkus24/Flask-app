@@ -3,6 +3,9 @@ import asyncio
 import re
 from datetime import datetime
 from opensearchpy import OpenSearch, NotFoundError
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def parse_number(value):
     
@@ -16,9 +19,13 @@ def parse_number(value):
     else:
         return int(value) 
 
+user_name = os.getenv("USER_NAME")
+user_password = os.getenv("PASSWORD")
+host_url = os.getenv("HOST_URL")
+
 client = OpenSearch(
-    hosts=["https://search-scraping-data-sqjdyrnbfijveyo3fr3lc6y24m.ap-south-1.es.amazonaws.com"],
-    http_auth=("Lavkus", "Lavkus@#1212"),
+    hosts=[host_url],
+    http_auth=(user_name, user_password),
 )
 
 async def extract_post_id(url):

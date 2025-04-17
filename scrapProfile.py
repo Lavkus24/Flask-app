@@ -30,7 +30,8 @@ import httpx
 from findCategory import find_category
 from opensearchpy import OpenSearch, helpers, NotFoundError
 from filterBotAccount import analyze_account
-
+from dotenv import load_dotenv
+load_dotenv()
 
 client = httpx.Client(
     headers={
@@ -42,9 +43,13 @@ client = httpx.Client(
     }
 )
 
+user_name = os.getenv("USER_NAME")
+user_password = os.getenv("PASSWORD")
+host_url = os.getenv("HOST_URL")
+
 client1 = OpenSearch(
-    hosts=["https://search-scraping-data-sqjdyrnbfijveyo3fr3lc6y24m.ap-south-1.es.amazonaws.com"],
-    http_auth=("Lavkus", "Lavkus@#1212"),
+    hosts=[host_url],
+    http_auth=(user_name, user_password),
 )
 
 def is_within_last_year(date_str):
