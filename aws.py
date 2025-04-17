@@ -1,7 +1,8 @@
 import json
 import asyncio
 import re
-from opensearchpy import OpenSearch
+from datetime import datetime
+from opensearchpy import OpenSearch, NotFoundError
 
 def parse_number(value):
     
@@ -20,6 +21,17 @@ client = OpenSearch(
     http_auth=("Lavkus", "Lavkus@#1212"),
 )
 
+async def extract_post_id(url):
+    """Extracts the post ID from the given Instagram URL."""
+    match = re.search(r"/(p|reel)/([^/]+)/", url)
+    return match.group(2) if match else None
+
+
+def extract_username(url):
+    match = re.match(r"https://www\.instagram\.com/([^/]+)/", url)
+    return match.group(1) if match else None
+
+
 async def update_instagram_profiles(data):
     try:
         username = data.get("username")
@@ -27,13 +39,34 @@ async def update_instagram_profiles(data):
         posts_count = data.get("posts_count")
         hashtags = data.get("hashtags")
         mentions = data.get("mentions")
+
         
- 
-        client.index(
-            index="instagram_profiles",
-            id=username,  
-            body=data
-        )
+        stats_data = {
+            "username": username,
+            "followers": followers,
+            "posts_count": posts_count,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        try:
+            client.index(
+                index="instagram_profile_stats",
+                body=stats_data
+            )
+        except  Exception as e:
+            print(f"Error in saving stats data")
+            
+        
+            
+        try : 
+            client.index(
+                index="instagram_profiles",
+                id=username,  
+                body=data
+            )
+        except Exception as e:
+            print(f"Error in saving data on db {e}")
+            
     
         response =  client.search(
             index="discovery_data",
@@ -90,37 +123,29 @@ async def add_influencers_followers(data,username):
     except Exception as e:
         print(f"Error storing : {e}")
 
-
-
-async def extract_post_id(url):
-    """Extracts the post ID from the given Instagram URL."""
-    match = re.search(r"/(p|reel)/([^/]+)/", url)
-    return match.group(2) if match else None
-
-def extract_username(url):
-    match = re.match(r"https://www\.instagram\.com/([^/]+)/", url)
-    return match.group(1) if match else None
-
 async def store_hashtag_mentions(hashtags_lists, mentions_lists, handle):
-    """Stores hashtags and mentions in OpenSearch."""
+  
     try:
         # Flatten the nested lists and remove duplicates using set()
         merged_hashtags = list(set([tag for sublist in hashtags_lists for tag in sublist]))
         merged_mentions = list(set([mention for sublist in mentions_lists for mention in sublist]))
 
         # ✅ Await the async OpenSearch update operation
-        client.update(
-            index='hashtags_mentions',
-            id=handle,
-            body={
-                "doc": {
-                    "hashtags": merged_hashtags,
-                    "mentions": merged_mentions
-                },
-                "doc_as_upsert": True  
-            }
-        )
-        print(f"Successfully stored hashtags and mentions for {handle}")
+        try:
+            client.update(
+                index='hashtags_mentions',
+                id=handle,
+                body={
+                    "doc": {
+                        "hashtags": merged_hashtags,
+                        "mentions": merged_mentions
+                    },
+                    "doc_as_upsert": True  
+                }
+            )
+            print(f"successfully stored hastag and mentions {handle}")
+        except Exception as e:
+            print(f"Error in storing hastag and mentions {handle}")
 
     except Exception as error:
         print("Error storing hashtags and mentions in OpenSearch:", error)
@@ -154,8 +179,6 @@ async def store_post_data_in_opensearch(batch_results):
                     body=data,
                     id=str(post_id)
                 )
-              
-        print(f"handle ; {handle}")
         
         if handle:
             await store_hashtag_mentions(hashtags_lists, mentions_lists, handle)
@@ -163,5 +186,34 @@ async def store_post_data_in_opensearch(batch_results):
     except Exception as error:
         print("Error storing data in OpenSearch:", error)
 
-        
+
+async def addInfluencerLikes(handles,username):
+    
+    print(f"handles : {handles}, username : {username}")
+    try:
+        existing_doc = client.get(index="instagram_profiles", id=username)
+        existing_followers = existing_doc['_source'].get('followers', [])
+        updated_followers = list(set(existing_followers + handles)) 
+        client.update(
+            index="posts_likes_hanelname",
+            id=username,
+            body={
+                "doc": {
+                    "followers": updated_followers
+                }
+            }
+        )
+
+    except NotFoundError:
+        # If document doesn't exist, create a new one
+        client.index(
+            index="posts_likes_hanelname",
+            id=username,
+            body={
+                "username": username,
+                "followers": handles
+            }
+        )
+    
+    return "success"
         
