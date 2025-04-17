@@ -16,13 +16,18 @@ import sys
 import os
 sys.stdout.reconfigure(encoding='utf-8')
 from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
+user_name = os.getenv("USER_NAME")
+user_password = os.getenv("PASSWORD")
+host_url = os.getenv("HOST_URL")
 
 client1 = OpenSearch(
-    hosts=["https://search-scraping-data-sqjdyrnbfijveyo3fr3lc6y24m.ap-south-1.es.amazonaws.com"],
-    http_auth=("Lavkus", "Lavkus@#1212"),
+    hosts=[host_url],
+    http_auth=(user_name, user_password),
 )
-
 
 def is_instagram_session_valid(session_id):
     """Check if an Instagram session ID is valid"""
