@@ -1,0 +1,25 @@
+{
+  "city_distribution": {
+    "India, Mumbai": "45%",
+    "India, Delhi": "15%",
+    "USA, New York": "5%",
+    "Canada, Toronto": "4%",
+    "UK, London": "4%",
+    "India, Bangalore": "3%",
+    "Other": "10%"
+  },
+  "age_distribution": {
+    "18-24": "30%",
+    "25-34": "35%",
+    "35-44": "20%",
+    "45-54": "7%",
+    "55-64": "4%",
+    "65+": "2%",
+    "13-17": "2%"
+  },
+  "gender_distribution": {
+    "Male": "60%",
+    "Female": "35%",
+    "Other": "5%"
+  }
+}
